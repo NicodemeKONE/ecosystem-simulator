@@ -395,8 +395,8 @@ def main():
         - Vieillissement
         - Statistiques temps réel
         
-        👨‍💻 **Développé par**: Votre Nom
-        🔗 **GitHub**: [Lien vers votre repo]
+        👨‍💻 **Développé par**: Nicodème KONE
+        🔗 **Mail**: nicoetude@gmail.com
         """)
     
     # Zone principale
