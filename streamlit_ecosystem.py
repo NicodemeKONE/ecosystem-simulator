@@ -1,4 +1,4 @@
-# streamlit_ecosystem.py - Version Streamlit de l'écosystème
+# streamlit_ecosystem.py - Version Streamlit corrigée
 # Intégration complète pour portfolio GitHub/Streamlit
 
 import streamlit as st
@@ -50,6 +50,14 @@ st.markdown("""
         border: none;
         border-radius: 5px;
         padding: 0.5rem;
+        font-weight: bold;
+    }
+    .status-running {
+        color: #4CAF50;
+        font-weight: bold;
+    }
+    .status-paused {
+        color: #FF9800;
         font-weight: bold;
     }
 </style>
@@ -298,7 +306,8 @@ def main():
     if 'ecosystem' not in st.session_state:
         st.session_state.ecosystem = None
         st.session_state.running = False
-        st.session_state.auto_run = False
+        st.session_state.auto_speed = 1.0
+        st.session_state.last_update = time.time()
         
     # Sidebar - Configuration
     with st.sidebar:
@@ -357,29 +366,42 @@ def main():
             ecosystem.add_resources(herbs_count, waters_count)
             st.session_state.ecosystem = ecosystem
             st.session_state.running = False
+            st.session_state.last_update = time.time()
             st.success("🎉 Écosystème créé!")
+            st.rerun()
             
         if st.session_state.ecosystem:
             col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("▶️ Démarrer/Pause"):
+                if st.button("▶️ Play" if not st.session_state.running else "⏸️ Pause"):
                     st.session_state.running = not st.session_state.running
+                    st.session_state.last_update = time.time()
+                    st.rerun()
                     
             with col2:
                 if st.button("⏭️ Tour Suivant"):
                     st.session_state.ecosystem.simulate_turn()
                     st.rerun()
             
-            # Mode automatique
-            auto_mode = st.checkbox("🔄 Mode Automatique", value=st.session_state.auto_run)
-            if auto_mode != st.session_state.auto_run:
-                st.session_state.auto_run = auto_mode
-                
-            if auto_mode and st.session_state.running:
-                time.sleep(1)
-                st.session_state.ecosystem.simulate_turn()
-                st.rerun()
+            # Vitesse de simulation
+            st.subheader("⚡ Vitesse")
+            speed = st.select_slider(
+                "Vitesse de simulation",
+                options=[0.5, 1.0, 2.0, 3.0],
+                value=st.session_state.auto_speed,
+                format_func=lambda x: f"{x}x"
+            )
+            if speed != st.session_state.auto_speed:
+                st.session_state.auto_speed = speed
+            
+            # Status
+            if st.session_state.running:
+                st.markdown('<p class="status-running">🟢 Simulation en cours...</p>', 
+                           unsafe_allow_html=True)
+            else:
+                st.markdown('<p class="status-paused">🟡 Simulation en pause</p>', 
+                           unsafe_allow_html=True)
         
         # Informations
         st.subheader("📖 À Propos")
@@ -398,6 +420,18 @@ def main():
         👨‍💻 **Développé par**: Nicodème KONE
         🔗 **Mail**: nicoetude@gmail.com
         """)
+    
+    # Gestion de l'auto-refresh
+    if st.session_state.ecosystem and st.session_state.running:
+        current_time = time.time()
+        time_since_last_update = current_time - st.session_state.last_update
+        expected_delay = 1.0 / st.session_state.auto_speed
+        
+        if time_since_last_update >= expected_delay:
+            st.session_state.ecosystem.simulate_turn()
+            st.session_state.last_update = current_time
+            time.sleep(0.1)  # Petite pause pour éviter la surcharge
+            st.rerun()
     
     # Zone principale
     if st.session_state.ecosystem:
@@ -540,6 +574,11 @@ def main():
             if ecosystem.turn % 5 == 0:
                 st.write("- 🌱 Respawn des ressources")
                 
+        # Force le refresh si en cours d'exécution
+        if st.session_state.running:
+            time.sleep(0.01)
+            st.rerun()
+                
     else:
         # Écran d'accueil
         st.subheader("🌟 Bienvenue dans le Simulateur d'Écosystème!")
@@ -561,7 +600,7 @@ def main():
             **Instructions**:
             1. Configurez votre écosystème dans la sidebar ⬅️
             2. Cliquez sur "🚀 Créer Écosystème"
-            3. Utilisez "▶️ Démarrer" pour lancer la simulation
+            3. Utilisez "▶️ Play" pour lancer la simulation
             4. Observez l'évolution en temps réel !
             
             ---
