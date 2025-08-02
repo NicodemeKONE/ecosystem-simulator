@@ -598,10 +598,11 @@ def main():
             - 🎨 **Presets configurables** pour différents scénarios
             
             **Instructions**:
-            1. Configurez votre écosystème dans la sidebar ⬅️
+            1. **Configurez votre écosystème dans la sidebar (>>) en haut à droite ⬅️**
             2. Cliquez sur "🚀 Créer Écosystème"
             3. Utilisez "▶️ Play" pour lancer la simulation
             4. Observez l'évolution en temps réel !
+            5. Les statistiques sont tout en bas.
             
             ---
             
